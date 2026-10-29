@@ -391,7 +391,7 @@
     // EVENT CONFIGURATION
     // ==========================================
 
-    const STORAGE_KEY = "hauntedOktoberfestTeamReveal_v1";
+    const STORAGE_KEY = "hauntedOktoberfestTeamReveal_v2";
 
     const TOTAL_TICKETS = 99;
 
@@ -439,37 +439,38 @@
     // CREATE BALANCED TEAM ASSIGNMENTS
     // ==========================================
 
-    function createAssignments() {
-      const ticketNumbers = Array.from(
-        { length: TOTAL_TICKETS },
-        (_, index) => index + 1
-      );
+    
+      function createAssignments() {
+  const ticketNumbers = Array.from(
+    { length: TOTAL_TICKETS },
+    (_, index) => index + 1
+  );
 
-      // Randomize which team receives the 7th person.
-      const teamOrder = shuffle([0, 1, 2, 3]);
+  // 99 tickets: three teams get 25, one gets 24.
+  const teamSlots = [];
 
-      const slots = [];
-
-      // One team gets 7 people.
-      // The other three teams get 6 each.
-      slots.push(...Array(7).fill(teamOrder[0]));
-      slots.push(...Array(6).fill(teamOrder[1]));
-      slots.push(...Array(6).fill(teamOrder[2]));
-      slots.push(...Array(6).fill(teamOrder[3]));
-
-      shuffle(ticketNumbers);
-      shuffle(slots);
-
-      const assignments = {};
-
-      for (let i = 0; i < TOTAL_TICKETS; i++) {
-        const ticket = ticketNumbers[i];
-
-        assignments[String(ticket).padStart(2, "0")] = slots[i];
-      }
-
-      return assignments;
+  for (let team = 0; team < TEAMS.length; team++) {
+    for (let i = 0; i < 24; i++) {
+      teamSlots.push(team);
     }
+  }
+
+  // Randomly distribute the remaining three tickets.
+  const extraTeams = shuffle([0, 1, 2, 3]).slice(0, 3);
+  extraTeams.forEach(team => teamSlots.push(team));
+
+  shuffle(ticketNumbers);
+  shuffle(teamSlots);
+
+  const assignments = {};
+
+  for (let i = 0; i < TOTAL_TICKETS; i++) {
+    const ticket = String(ticketNumbers[i]).padStart(2, "0");
+    assignments[ticket] = teamSlots[i];
+  }
+
+  return assignments;
+}
     // ==========================================
     // LOAD OR CREATE SAVED EVENT DATA
     // ==========================================
