@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#170d25">
+
+  <title>Haunted Oktoberfest | Team Reveal</title>
+
+  <!-- QR code scanner library -->
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <style>
+    :root {
+      --background: #170d25;
+      --card: #261536;
+      --purple: #9b5de5;
+      --orange: #ff9f1c;
+      --white: #ffffff;
+      --muted: #c9bdd6;
+      --green: #5ce0a0;
+      --red: #ff7777;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at top, #46205c 0%, transparent 55%),
+        var(--background);
+      color: var(--white);
+      font-family: Arial, Helvetica, sans-serif;
+      text-align: center;
+      padding: 20px 14px 40px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 620px;
+      margin: auto;
+    }
+
+    .header {
+      padding: 12px 0 22px;
+    }
+
+    .header .icon {
+      font-size: 48px;
+    }
+
+    h1 {
+      margin: 10px 0;
+      color: var(--orange);
+      font-size: clamp(25px, 6vw, 36px);
+      letter-spacing: 1px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .panel {
+      background: rgba(38, 21, 54, 0.96);
+      border: 1px solid #694080;
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+    }
+
+    h2 {
+      font-size: 20px;
+      margin-top: 0;
+    }
+
+    #reader {
+      width: 100%;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #ffffff;
+      margin: 16px auto;
+    }
+
+    button {
+      width: 100%;
+      min-height: 48px;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .primary {
+      background: var(--orange);
+      color: #20102b;
+    }
+
+    .secondary {
+      background: var(--purple);
+      color: white;
+    }
+
+    .dark-button {
+      background: #3c2a4b;
+      color: white;
+      border: 1px solid #76558b;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 22px;
+      overflow-wrap: anywhere;
+    }
+
+    .success {
+      color: var(--green);
+    }
+
+    .error {
+      color: var(--red);
+    }
+
+    .reveal {
+      display: none;
+      padding: 28px 16px;
+      border: 2px solid var(--orange);
+      border-radius: 18px;
+      margin: 18px 0;
+      background:
+        radial-gradient(circle, #48245c 0%, #21112e 75%);
+      animation: revealIn 0.5s ease-out;
+    }
+
+    @keyframes revealIn {
+      from {
+        opacity: 0;
+        transform: scale(0.94);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .reveal-label {
+      font-size: 15px;
+      color: var(--muted);
+      letter-spacing: 2px;
+    }
+
+    .team-icon {
+      font-size: 64px;
+      margin: 18px 0;
+    }
+
+    .team-name {
+      color: var(--orange);
+      font-size: clamp(27px, 7vw, 40px);
+      font-weight: 900;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
+    .ticket-number {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .duplicate-notice {
+      margin-top: 14px;
+      color: var(--orange);
+      font-size: 14px;
+    }
+
+    input {
+      width: 100%;
+      min-height: 48px;
+      padding: 12px;
+      border: 1px solid #76558b;
+      border-radius: 10px;
+      background: #170d25;
+      color: white;
+      font-size: 16px;
+      margin-top: 8px;
+    }
+
+    .team-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      text-align: left;
+    }
+
+    .team-item {
+      padding: 13px 10px;
+      border: 1px solid #694080;
+      border-radius: 10px;
+      background: #21112e;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .team-item strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 3px;
+    }
+
+    .small-note {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 14px;
+    }
+
+    .footer {
+      color: #a99ab9;
+      font-size: 12px;
+      margin-top: 25px;
+    }
+
+    @media (max-width: 380px) {
+      .team-list {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="container">
+
+    <header class="header">
+      <div class="icon">🎃🍺</div>
+
+      <h1>HAUNTED OKTOBERFEST</h1>
+
+      <div class="subtitle">
+        QR Team Reveal Station<br>
+        Scan your ticket. Discover your fate.
+      </div>
+    </header>
+
+    <section class="panel">
+      <h2>🔮 Reveal Your Team</h2>
+
+      <p class="subtitle">
+        Present your ticket QR code to the scanner.
+        Your team will be revealed on this screen.
+      </p>
+
+      <div id="reader"></div>
+
+      <button
+        id="scanButton"
+        class="primary"
+        onclick="startScanner()">
+        📷 START CAMERA
+      </button>
+
+      <p id="cameraStatus" class="status" aria-live="polite">
+        Camera is not running.
+      </p>
+    </section>
+
+    <section id="reveal" class="reveal" aria-live="polite">
+      <div class="reveal-label">YOUR TEAM IS...</div>
+
+      <div id="teamIcon" class="team-icon"></div>
+
+      <div id="teamName" class="team-name"></div>
+
+      <div id="ticketNumber" class="ticket-number"></div>
+
+      <div id="duplicateNotice" class="duplicate-notice"></div>
+
+      <button
+        class="primary"
+        onclick="startScanner()">
+        📷 SCAN NEXT TICKET
+      </button>
+    </section>
+
+    <section class="panel">
+      <h2>⌨️ Manual Ticket Entry</h2>
+
+      <p class="subtitle">
+        Use this if a QR code cannot be scanned.
+      </p>
+
+      <form onsubmit="submitManualTicket(event)">
+        <input
+          id="manualTicket"
+          type="text"
+          placeholder="Example: 07 or Haunted Oktoberfest -07"
+          autocomplete="off"
+          aria-label="Ticket number">
+
+        <button class="secondary" type="submit">
+          REVEAL TEAM
+        </button>
+      </form>
+
+      <p id="manualStatus" class="status" aria-live="polite"></p>
+    </section>
+
+    <section class="panel">
+      <h2>🎭 The Four Teams</h2>
+
+      <div class="team-list">
+
+        <div class="team-item">
+          <strong>🎡 Wheel of Fortune</strong>
+          <span id="count0">Assigned: 0</span>
+        </div>
+
+        <div class="team-item">
+          <strong>☀️ The Sun</strong>
+          <span id="count1">Assigned: 0</span>
+        </div>
+
+        <div class="team-item">
+          <strong>⭐ The Star</strong>
+          <span id="count2">Assigned: 0</span>
+        </div>
+
+        <div class="team-item">
+          <strong>🏆 Nine of Cups</strong>
+          <span id="count3">Assigned: 0</span>
+        </div>
+
+      </div>
+
+      <p class="small-note">
+        Team totals are displayed, but individual ticket
+        assignments remain hidden until a ticket is scanned.
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>📋 Organizer Tools</h2>
+
+      <p class="subtitle">
+        Export a backup of all ticket assignments and check-ins.
+      </p>
+
+      <button class="secondary" onclick="exportCSV()">
+        ⬇️ EXPORT TEAM LIST (CSV)
+      </button>
+
+      <p id="saveStatus" class="status" aria-live="polite"></p>
+
+      <p class="small-note">
+        Keep this page open in the same browser.
+        Export the CSV before the event as a backup.
+      </p>
+    </section>
+
+    <footer class="footer">
+      HAUNTED OKTOBERFEST · PRIVATE EVENT TEAM REVEAL
+    </footer>
+
+  </main>
+
+  <script>
+    "use strict";
+
+    // ==========================================
+    // EVENT CONFIGURATION
+    // ==========================================
+
+    const STORAGE_KEY = "hauntedOktoberfestTeamReveal_v1";
+
+    const TOTAL_TICKETS = 25;
+
+    const TEAMS = [
+      {
+        name: "Wheel of Fortune",
+        icon: "🎡"
+      },
+      {
+        name: "The Sun",
+        icon: "☀️"
+      },
+      {
+        name: "The Star",
+        icon: "⭐"
+      },
+      {
+        name: "Nine of Cups",
+        icon: "🏆"
+      }
+    ];
+
+    let eventData = null;
+    let scanner = null;
+    let scannerRunning = false;
+    let scanLocked = false;
+
+
+    // ==========================================
+    // RANDOMIZATION
+    // ==========================================
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+
+      return array;
+    }
+
+
+    // ==========================================
+    // CREATE BALANCED TEAM ASSIGNMENTS
+    // ==========================================
+
+    function createAssignments() {
+      const ticketNumbers = Array.from(
+        { length: TOTAL_TICKETS },
+        (_, index) => index + 1
+      );
+
+      // Randomize which team receives the 7th person.
+      const teamOrder = shuffle([0, 1, 2, 3]);
+
+      const slots = [];
+
+      // One team gets 7 people.
+      // The other three teams get 6 each.
+      slots.push(...Array(7).fill(teamOrder[0]));
+      slots.push(...Array(6).fill(teamOrder[1]));
+      slots.push(...Array(6).fill(teamOrder[2]));
+      slots.push(...Array(6).fill(teamOrder[3]));
+
+      shuffle(ticketNumbers);
+      shuffle(slots);
+
+      const assignments = {};
+
+      for (let i = 0; i < TOTAL_TICKETS; i++) {
+        const ticket = ticketNumbers[i];
+
+        assignments[String(ticket).padStart(2, "0")] = slots[i];
+      }
+
+      return assignments;
+    }
+
+
+    // ==========================================
+    // LOAD OR CREATE SAVED EVENT DATA
+    // ==========================================
+
+    function initializeEvent() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+
+        if (saved) {
+          const parsed = JSON.parse(saved);
+
+          const valid =
+            parsed &&
+            parsed.version === 1 &&
+            parsed.assignments &&
+            Object.keys(parsed.assignments).length === TOTAL_TICKETS &&
+            parsed.scanned instanceof Array;
+
+          if (valid) {
+            eventData = parsed;
+            return;
+          }
+        }
+      } catch (error) {
+        console.error("Could not load saved assignments:", error);
+      }
+
+      eventData = {
+        version: 1,
+        assignments: createAssignments(),
+        scanned: [],
+        createdAt: new Date().toISOString()
+      };
+
+      saveEventData();
+    }
+
+
+    // ==========================================
+    // SAVE DATA ON THIS BROWSER
+    // ==========================================
+
+    function saveEventData() {
+      try {
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify(eventData)
+        );
+
+        document.getElementById("saveStatus").textContent =
+          "Assignments saved in this browser.";
+
+        document.getElementById("saveStatus").className =
+          "status success";
+
+        return true;
+
+      } catch (error) {
+        console.error("Could not save event data:", error);
+
+        document.getElementById("saveStatus").textContent =
+          "Warning: browser storage is unavailable. Export a CSV backup.";
+
+        document.getElementById("saveStatus").className =
+          "status error";
+
+        return false;
+      }
+    }
+
+
+    // ==========================================
+    // UPDATE TEAM TOTALS
+    // ==========================================
+
+    function updateTeamCounts() {
+      const counts = [0, 0, 0, 0];
+
+      Object.values(eventData.assignments).forEach(teamIndex => {
+        if (Number.isInteger(teamIndex) && teamIndex >= 0 && teamIndex < 4) {
+          counts[teamIndex]++;
+        }
+      });
+
+      counts.forEach((count, index) => {
+        document.getElementById("count" + index).textContent =
+          "Assigned: " + count;
+      });
+    }
+
+
+    // ==========================================
+    // READ THE TICKET NUMBER FROM QR TEXT
+    // ==========================================
+
+    function parseTicketNumber(text) {
+      if (!text) {
+        return null;
+      }
+
+      const normalized = String(text).trim();
+
+      // Accepts:
+      // Haunted Oktoberfest -01
+      // Haunted Oktoberfest - 01
+      // Haunted Oktoberfest-01
+      // 01
+      // 1
+
+      let match = normalized.match(
+        /Haunted\s+Oktoberfest\s*[-–—]?\s*0*(\d{1,2})/i
+      );
+
+      if (!match && /^\d{1,2}$/.test(normalized)) {
+        match = [normalized, normalized];
+      }
+
+      if (!match) {
+        return null;
+      }
+
+      const number = Number(match[1]);
+
+      if (
+        !Number.isInteger(number) ||
+        number < 1 ||
+        number > TOTAL_TICKETS
+      ) {
+        return null;
+      }
+
+      return String(number).padStart(2, "0");
+    }
+
+
+    // ==========================================
+    // PROCESS A TICKET
+    // ==========================================
+
+    function processTicket(rawText) {
+      const ticket = parseTicketNumber(rawText);
+
+      if (!ticket) {
+        showInvalidTicket(rawText);
+        return;
+      }
+
+      const teamIndex = eventData.assignments[ticket];
+
+      if (
+        !Number.isInteger(teamIndex) ||
+        !TEAMS[teamIndex]
+      ) {
+        showInvalidTicket(rawText);
+        return;
+      }
+
+      const alreadyScanned = eventData.scanned.includes(ticket);
+
+      if (!alreadyScanned) {
+        eventData.scanned.push(ticket);
+        saveEventData();
+      }
+
+      revealTeam(ticket, teamIndex, alreadyScanned);
+    }
+
+
+    // ==========================================
+    // DISPLAY THE TEAM REVEAL
+    // ==========================================
+
+    function revealTeam(ticket, teamIndex, alreadyScanned) {
+      const team = TEAMS[teamIndex];
+
+      document.getElementById("teamIcon").textContent = team.icon;
+
+      document.getElementById("teamName").textContent = team.name;
+
+      document.getElementById("ticketNumber").textContent =
+        "TICKET #" + ticket;
+
+      const notice = document.getElementById("duplicateNotice");
+
+      if (alreadyScanned) {
+        notice.textContent =
+          "✓ This ticket was already checked in. The team remains unchanged.";
+      } else {
+        notice.textContent =
+          "✓ Ticket checked in. Welcome to your team!";
+      }
+
+      document.getElementById("reveal").style.display = "block";
+
+      document.getElementById("manualStatus").textContent = "";
+
+      updateTeamCounts();
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    }
+
+
+    // ==========================================
+    // INVALID TICKET MESSAGE
+    // ==========================================
+
+    function showInvalidTicket(rawText) {
+      document.getElementById("reveal").style.display = "block";
+
+      document.getElementById("teamIcon").textContent = "⚠️";
+
+      document.getElementById("teamName").textContent =
+        "INVALID TICKET";
+
+      document.getElementById("ticketNumber").textContent =
+        "Scanned text: " + String(rawText).slice(0, 100);
+
+      document.getElementById("duplicateNotice").textContent =
+        "Expected ticket numbers 01–25. Please try again.";
+
+      document.getElementById("duplicateNotice").className =
+        "duplicate-notice error";
+    }
+
+
+    // ==========================================
+    // START CAMERA SCANNER
+    // ==========================================
+
+    async function startScanner() {
+      if (scannerRunning) {
+        return;
+      }
+
+      if (typeof Html5Qrcode === "undefined") {
+        setCameraStatus(
+          "Scanner library could not load. Check your internet connection.",
+          true
+        );
+        return;
+      }
+
+      const button = document.getElementById("scanButton");
+
+      button.disabled = true;
+
+      setCameraStatus("Starting camera...", false);
+
+      scanLocked = false;
+
+      try {
+        if (!scanner) {
+          scanner = new Html5Qrcode("reader");
+        }
+
+        await scanner.start(
+          { facingMode: "environment" },
+
+          {
+            fps: 10,
+            qrbox: function (viewWidth, viewHeight) {
+              const side = Math.floor(
+                Math.min(viewWidth, viewHeight) * 0.75
+              );
+
+              return {
+                width: Math.max(150, side),
+                height: Math.max(150, side)
+              };
+            }
+          },
+
+          async function (decodedText) {
+            if (scanLocked) {
+              return;
+            }
+
+            scanLocked = true;
+
+            try {
+              await stopScanner();
+            } catch (error) {
+              console.error("Camera stop error:", error);
+            }
+
+            processTicket(decodedText);
+          },
+
+          function () {
+            // Ignore unsuccessful frame scans.
+          }
+        );
+
+        scannerRunning = true;
+
+        button.disabled = false;
+        button.textContent = "📷 CAMERA RUNNING";
+
+        setCameraStatus(
+          "Point the rear camera at a ticket QR code.",
+          false
+        );
+
+      } catch (error) {
+        console.error("Camera start error:", error);
+
+        scannerRunning = false;
+        button.disabled = false;
+        button.textContent = "📷 TRY CAMERA AGAIN";
+
+        setCameraStatus(
+          "Could not start camera. Allow camera permission and open this page using HTTPS in Chrome.",
+          true
+        );
+      }
+    }
+
+
+    // ==========================================
+    // STOP CAMERA SCANNER
+    // ==========================================
+
+    async function stopScanner() {
+      if (scanner && scannerRunning) {
+        await scanner.stop();
+      }
+
+      scannerRunning = false;
+
+      const button = document.getElementById("scanButton");
+
+      button.disabled = false;
+      button.textContent = "📷 SCAN NEXT TICKET";
+
+      setCameraStatus(
+        "Camera stopped. Reveal the next ticket when ready.",
+        false
+      );
+    }
+
+
+    // ==========================================
+    // CAMERA STATUS MESSAGE
+    // ==========================================
+
+    function setCameraStatus(message, isError) {
+      const element = document.getElementById("cameraStatus");
+
+      element.textContent = message;
+
+      element.className = isError
+        ? "status error"
+        : "status";
+    }
+
+
+    // ==========================================
+    // MANUAL TICKET ENTRY
+    // ==========================================
+
+    function submitManualTicket(event) {
+      event.preventDefault();
+
+      const input = document.getElementById("manualTicket");
+
+      const ticket = input.value.trim();
+
+      if (!ticket) {
+        document.getElementById("manualStatus").textContent =
+          "Enter a ticket number first.";
+
+        return;
+      }
+
+      processTicket(ticket);
+
+      input.value = "";
+    }
+
+
+    // ==========================================
+    // EXPORT ALL ASSIGNMENTS AS CSV
+    // ==========================================
+
+    function exportCSV() {
+      const rows = [
+        ["Ticket Number", "Team", "Checked In"]
+      ];
+
+      for (let i = 1; i <= TOTAL_TICKETS; i++) {
+        const ticket = String(i).padStart(2, "0");
+
+        const teamIndex = eventData.assignments[ticket];
+
+        const team = TEAMS[teamIndex];
+
+        rows.push([
+          ticket,
+          team ? team.name : "Unknown",
+          eventData.scanned.includes(ticket) ? "Yes" : "No"
+        ]);
+      }
+
+      const csv = rows.map(row =>
+        row.map(value =>
+          '"' + String(value).replace(/"/g, '""') + '"'
+        ).join(",")
+      ).join("\r\n");
+
+      const blob = new Blob(
+        ["\uFEFF" + csv],
+        { type: "text/csv;charset=utf-8;" }
+      );
+
+      const url = URL.createObjectURL(blob);
+
+    
