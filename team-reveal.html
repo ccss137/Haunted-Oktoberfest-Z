@@ -1,0 +1,200 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Haunted Oktoberfest — Team Reveal</title>
+<script src="https://unpkg.com/html5-qrcode"></script>
+<style>
+body {
+  margin: 0;
+  padding: 24px 16px;
+  background: #180d23;
+  color: white;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+h1 { color: #ff9f1c; }
+.panel {
+  max-width: 560px;
+  margin: 20px auto;
+  padding: 24px 18px;
+  border: 1px solid #79509a;
+  border-radius: 22px;
+  background: #291638;
+}
+input, button {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 16px;
+  margin-top: 12px;
+  border: 0;
+  border-radius: 12px;
+  font-size: 18px;
+}
+button { background: #ff9f1c; color: #24122e; font-weight: bold; }
+#manualButton { background: #9955e8; color: white; }
+#reader { width: 100%; margin-top: 18px; }
+#result { font-size: 23px; font-weight: bold; margin-top: 20px; }
+#status { color: #e3cceF; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<h1>🎃 🍺 HAUNTED OKTOBERFEST</h1>
+<p>QR Team Reveal Station</p>
+
+<div class="panel">
+  <h2>🔮 Reveal Your Team</h2>
+  <p>Scan a ticket or enter its number below.</p>
+
+  <button id="startButton" onclick="startCamera()">📷 START CAMERA</button>
+  <div id="reader"></div>
+  <p id="status">Camera not started. Manual entry is available below.</p>
+
+  <h3>⌨️ Manual Ticket Entry</h3>
+  <input id="ticketInput" placeholder="Enter 01–99 or full ticket text"
+         autocomplete="off">
+  <button id="manualButton" onclick="manualReveal()">REVEAL TEAM</button>
+  <div id="result" aria-live="polite"></div>
+</div>
+
+<script>
+const STORAGE_KEY = "hauntedOktoberfestTeamReveal_v2";
+const TEAMS = [
+  { name: "Wheel of Fortune", emoji: "🎡" },
+  { name: "The Sun", emoji: "☀️" },
+  { name: "The Star", emoji: "⭐" },
+  { name: "Nine of Cups", emoji: "🏆" }
+];
+
+let scanner = null;
+let cameraRunning = false;
+
+function shuffle(items) {
+  for (let i = items.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+  return items;
+}
+
+function createAssignments() {
+  const tickets = shuffle(Array.from({length: 99}, (_, i) => i + 1));
+  const slots = [];
+
+  // Balanced: 25, 25, 25 and 24 tickets.
+  TEAMS.forEach((team, index) => {
+    for (let i = 0; i < (index === 3 ? 24 : 25); i++) {
+      slots.push(index);
+    }
+  });
+
+  shuffle(slots);
+  const assignments = {};
+  tickets.forEach((number, i) => {
+    assignments[String(number).padStart(2, "0")] = slots[i];
+  });
+  return assignments;
+}
+
+function getAssignments() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (saved && Object.keys(saved).length === 99 &&
+        Array.from({length: 99}, (_, i) =>
+          String(i + 1).padStart(2, "0")
+        ).every(n => Number.isInteger(saved[n]) &&
+                     saved[n] >= 0 && saved[n] < TEAMS.length)) {
+      return saved;
+    }
+  } catch (e) {}
+
+  const assignments = createAssignments();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(assignments));
+  return assignments;
+}
+
+function ticketNumber(text) {
+  const match = String(text).trim().match(/(?:^|\D)(\d{1,2})\s*$/);
+  if (!match) return null;
+  const n = Number(match[1]);
+  return n >= 1 && n <= 99 ? String(n).padStart(2, "0") : null;
+}
+
+function revealTicket(raw) {
+  const number = ticketNumber(raw);
+  const result = document.getElementById("result");
+
+  if (!number) {
+    result.textContent = "Invalid ticket. Enter a number from 01 to 99.";
+    return;
+  }
+
+  try {
+    const assignments = getAssignments();
+    const team = TEAMS[assignments[number]];
+    if (!team) throw new Error("Team assignment missing.");
+
+    result.textContent =
+      "Ticket " + number + "\n" + team.emoji + " " + team.name;
+    document.getElementById("ticketInput").value = number;
+    document.getElementById("status").textContent =
+      "Ticket " + number + " successfully processed.";
+  } catch (e) {
+    result.textContent = "Could not load assignments: " + e.message;
+  }
+}
+
+function manualReveal() {
+  revealTicket(document.getElementById("ticketInput").value);
+}
+
+async function startCamera() {
+  const status = document.getElementById("status");
+  const button = document.getElementById("startButton");
+
+  if (cameraRunning) return;
+
+  if (typeof Html5Qrcode === "undefined") {
+    status.textContent =
+      "Scanner library failed to load. Check your internet connection and reload.";
+    return;
+  }
+
+  try {
+    button.disabled = true;
+    status.textContent = "Starting camera…";
+
+    scanner = new Html5Qrcode("reader");
+    await scanner.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 240, height: 240 } },
+      decodedText => {
+        revealTicket(decodedText);
+      },
+      () => {}
+    );
+
+    cameraRunning = true;
+    status.textContent = "Camera running. Point it at a ticket QR code.";
+    button.textContent = "CAMERA RUNNING";
+  } catch (e) {
+    status.textContent = "Camera error: " + (e.message || e);
+    button.disabled = false;
+  }
+}
+
+document.getElementById("ticketInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") manualReveal();
+});
+
+try {
+  getAssignments();
+} catch (e) {
+  document.getElementById("status").textContent =
+    "Storage error: " + e.message;
+}
+</script>
+</body>
+</html>
